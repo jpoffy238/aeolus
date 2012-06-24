@@ -710,7 +710,7 @@ int Model::read_instr(void) {
 	Rank *R;
 	Group *G;
 	Ifelm *I;
-	Addsynth *A;
+	AdditiveSynth *A;
 
 	enum {
 		CONT,
@@ -878,7 +878,7 @@ int Model::read_instr(void) {
 				} else if (strlen(t1) > 63)
 					stat = BAD_STR1;
 				else {
-					A = new Addsynth;
+					A = new AdditiveSynth;
 					strcpy(A->_filename, t1);
 					if (A->load(_stops)) {
 						stat = ERROR;
@@ -1070,7 +1070,7 @@ int Model::write_instr(void) {
 	Rank *R;
 	Group *G;
 	Ifelm *I;
-	Addsynth *A;
+	AdditiveSynth *A;
 
 	sprintf(buff, "%s/definition", _instr);
 	if (!(F = fopen(buff, "w"))) {

@@ -71,7 +71,7 @@ public:
 	void handle_mesg(ITC_mesg *);
 	void handle_time(void);
 
-	void init(Addsynth *);
+	void init(AdditiveSynth *);
 	void lock(int);
 	void show(void) {
 		x_mapraised();
@@ -107,14 +107,14 @@ private:
 	virtual void handle_callb(int, X_window*, _XEvent*);
 
 	void handle_xmesg(XClientMessageEvent *E);
-	void set_func(N_func *D, Functionwin *F, int k);
-	void set_harm(HN_func *D, Multislider *M, Functionwin *F, int k, int h);
-	void set_note(HN_func *D, Multislider *M, Functionwin *F, int n);
-	void msl_update(HN_func *D, Multislider *M, Functionwin *F, int k, int d,
+	void set_func(NoteFunction *D, Functionwin *F, int k);
+	void set_harm(HarmonicFunction *D, Multislider *M, Functionwin *F, int k, int h);
+	void set_note(HarmonicFunction *D, Multislider *M, Functionwin *F, int n);
+	void msl_update(HarmonicFunction *D, Multislider *M, Functionwin *F, int k, int d,
 			int h, int n);
-	void fun_update(HN_func *D, Multislider *M, Functionwin *F, int d, int h,
+	void fun_update(HarmonicFunction *D, Multislider *M, Functionwin *F, int d, int h,
 			int n);
-	void fun_update(N_func *D, Functionwin *F, int d);
+	void fun_update(NoteFunction *D, Functionwin *F, int d);
 	void add_text(X_window *win, int xp, int yp, int xs, int ys,
 			const char *text, X_textln_style *style);
 	void set_tab(int);
@@ -130,7 +130,7 @@ private:
 	int _lock;
 	const char *_sdir;
 	const char *_wdir;
-	Addsynth *_edit;
+	AdditiveSynth *_edit;
 
 	X_button *_tabb[4];
 	X_window *_tabw[4];

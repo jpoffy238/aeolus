@@ -33,7 +33,7 @@ void Slave::thr_main(void) {
 			send_event(TO_MODEL,
 					new M_ifc_ifelm(MT_IFC_ELATT, X->_group, X->_ifelm));
 			X->_wave = new Rankwave(X->_sdef->_n0, X->_sdef->_n1);
-			X->_wave->gen_waves(X->_sdef, X->_fsamp, X->_fbase, X->_scale);
+			X->_wave->generateWaves(X->_sdef, X->_fsamp, X->_fbase, X->_scale);
 			send_event(TO_AUDIO, M);
 			break;
 		}
@@ -45,7 +45,7 @@ void Slave::thr_main(void) {
 			X->_wave = new Rankwave(X->_sdef->_n0, X->_sdef->_n1);
 			if (X->_wave->load(X->_path, X->_sdef, X->_fsamp, X->_fbase,
 					X->_scale)) {
-				X->_wave->gen_waves(X->_sdef, X->_fsamp, X->_fbase, X->_scale);
+				X->_wave->generateWaves(X->_sdef, X->_fsamp, X->_fbase, X->_scale);
 			}
 			send_event(TO_AUDIO, M);
 			break;

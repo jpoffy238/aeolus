@@ -28,18 +28,18 @@ class Pipewave {
 private:
 
 	Pipewave(void) :
-			_p0(0), _p1(0), _p2(0), _l1(0), _k_s(0), _k_r(0), _m_r(0), _link(0), _sbit(
-					0), _sdel(0), _p_p(0), _y_p(0), _z_p(0), _p_r(0), _y_r(0), _g_r(
-					0), _i_r(0) {
+			attack_start(0), loop_start(0), loop_end(0), loop_length(0), sample_step(0), release_length(0), release_multiplier(0), _link(0), _sbit(
+					0), _sdel(0), play_pointer(0), play_interpolation(0), play_interpolation_speed(0), release_pointer(0), release_interpolation(0), release_gain(
+					0), release_count(0) {
 	}
 
 	~Pipewave(void) {
-		delete[] _p0;
+		delete[] attack_start;
 	}
 
 	friend class Rankwave;
 
-	void genwave(Addsynth *D, int n, float fsamp, float fpipe);
+	void generateWaves(AdditiveSynth *D, int n, float fsamp, float fpipe);
 	void save(FILE *F);
 	void load(FILE *F);
 	void play(void);
@@ -47,28 +47,28 @@ private:
 	static void looplen(float f, float fsamp, int lmax, int *aa, int *bb);
 	static void attgain(int n, float p);
 
-	float *_p0; // attack start
-	float *_p1; // loop start
-	float *_p2; // loop end
-	int32_t _l0; // attack length
-	int32_t _l1; // loop length
-	int16_t _k_s; // sample step
-	int16_t _k_r; // release lenght
-	float _m_r; // release multiplier
-	float _d_r; // release detune
-	float _d_p; // instability
+	float *attack_start; // attack start
+	float *loop_start; // loop start
+	float *loop_end; // loop end
+	int32_t attack_length; // attack length
+	int32_t loop_length; // loop length
+	int16_t sample_step; // sample step
+	int16_t release_length; // release lenght
+	float release_multiplier; // release multiplier
+	float release_detune; // release detune
+	float instability; // instability
 
 	Pipewave *_link; // link to next in active chain
 	uint32_t _sbit; // on state bit
 	uint32_t _sdel; // delayed state
 	float *_out; // audio output buffer
-	float *_p_p; // play pointer
-	float _y_p; // play interpolation
-	float _z_p; // play interpolation speed
-	float *_p_r; // release pointer
-	float _y_r; // release interpolation
-	float _g_r; // release gain
-	int16_t _i_r; // release count
+	float *play_pointer; // play pointer
+	float play_interpolation; // play interpolation
+	float play_interpolation_speed; // play interpolation speed
+	float *release_pointer; // release pointer
+	float release_interpolation; // release interpolation
+	float release_gain; // release gain
+	int16_t release_count; // release count
 
 	static void initstatic(float fsamp);
 
@@ -88,7 +88,7 @@ public:
 			return;
 		Pipewave *P = _pipes + (n - _n0);
 		P->_sbit = _sbit;
-		if (!(P->_sdel || P->_p_p || P->_p_r)) {
+		if (!(P->_sdel || P->play_pointer || P->release_pointer)) {
 			P->_sdel |= _sbit;
 			P->_link = _list;
 			_list = P;
@@ -117,10 +117,10 @@ public:
 	}
 	void play(int shift);
 	void set_param(float *out, int del, int pan);
-	void gen_waves(Addsynth *D, float fsamp, float fbase, float *scale);
-	int save(const char *path, Addsynth *D, float fsamp, float fbase,
+	void generateWaves(AdditiveSynth *D, float fsamp, float fbase, float *scale);
+	int save(const char *path, AdditiveSynth *D, float fsamp, float fbase,
 			float *scale);
-	int load(const char *path, Addsynth *D, float fsamp, float fbase,
+	int load(const char *path, AdditiveSynth *D, float fsamp, float fbase,
 			float *scale);
 	bool modif(void) const {
 		return _modif;

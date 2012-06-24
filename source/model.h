@@ -40,7 +40,7 @@ class Rank {
 public:
 
 	int _count;
-	Addsynth *_sdef;
+	AdditiveSynth *_sdef;
 	Rankwave *_wave;
 };
 

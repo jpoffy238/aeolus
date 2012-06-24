@@ -44,42 +44,42 @@ void Pipewave::play(void) {
 	float g, dg, y, dy, t;
 	float *p, *q, *r;
 
-	p = _p_p;
-	r = _p_r;
+	p = play_pointer;
+	r = release_pointer;
 
 	if (_sdel & 1) {
 		if (!p) {
-			p = _p0;
-			_y_p = 0.0f;
-			_z_p = 0.0f;
+			p = attack_start;
+			play_interpolation = 0.0f;
+			play_interpolation_speed = 0.0f;
 		}
 	} else {
 		if (!r) {
 			r = p;
 			p = 0;
-			_g_r = 1.0f;
-			_y_r = _y_p;
-			_i_r = _k_r;
+			release_gain = 1.0f;
+			release_interpolation = play_interpolation;
+			release_count = release_length;
 		}
 	}
 
 	if (r) {
 		k1 = PERIOD;
 		q = _out;
-		g = _g_r;
-		i = _i_r - 1;
+		g = release_gain;
+		i = release_count - 1;
 		dg = g / PERIOD;
 		if (i)
-			dg *= _m_r;
+			dg *= release_multiplier;
 
-		if (r < _p1) {
+		if (r < loop_start) {
 			while (k1--) {
 				*q++ += g * *r++;
 				g -= dg;
 			}
 		} else {
-			y = _y_r;
-			dy = _d_r;
+			y = release_interpolation;
+			dy = release_detune;
 			while (k1) {
 				t = y + k1 * dy;
 				d = 0;
@@ -96,19 +96,19 @@ void Pipewave::play(void) {
 					*q++ += g * (r[0] + y * (r[1] - r[0]));
 					g -= dg;
 					y += dy;
-					r += _k_s;
+					r += sample_step;
 				}
 				y -= d;
 				r += d;
 			}
-			_y_r = y;
+			release_interpolation = y;
 		}
 
 		if (i) {
-			_g_r = g;
-			_i_r = i;
-			if (r >= _p2)
-				r -= _l1;
+			release_gain = g;
+			release_count = i;
+			if (r >= loop_end)
+				r -= loop_length;
 		} else
 			r = 0;
 	}
@@ -116,15 +116,15 @@ void Pipewave::play(void) {
 	if (p) {
 		k1 = PERIOD;
 		q = _out;
-		if (p < _p1) {
+		if (p < loop_start) {
 			while (k1--) {
 				*q++ += *p++;
 			}
 		} else {
-			y = _y_p;
-			_z_p += _d_p * 0.0005f
-					* (0.05f * _d_p * (_rgen.urandf() - 0.5f) - _z_p);
-			dy = _z_p * _k_s;
+			y = play_interpolation;
+			play_interpolation_speed += instability * 0.0005f
+					* (0.05f * instability * (_rgen.urandf() - 0.5f) - play_interpolation_speed);
+			dy = play_interpolation_speed * sample_step;
 			while (k1) {
 				t = y + k1 * dy;
 				d = 0;
@@ -140,84 +140,84 @@ void Pipewave::play(void) {
 				while (k2--) {
 					*q++ += p[0] + y * (p[1] - p[0]);
 					y += dy;
-					p += _k_s;
+					p += sample_step;
 				}
 				y -= d;
 				p += d;
 			}
-			if (p >= _p2)
-				p -= _l1;
-			_y_p = y;
+			if (p >= loop_end)
+				p -= loop_length;
+			play_interpolation = y;
 		}
 	}
 
-	_p_p = p;
-	_p_r = r;
+	play_pointer = p;
+	release_pointer = r;
 }
 
-void Pipewave::genwave(Addsynth *D, int n, float fsamp, float fpipe) {
+void Pipewave::generateWaves(AdditiveSynth *D, int n, float fsamp, float fpipe) {
 	int h, i, k, nc;
 	float f0, f1, f, m, t, v, v0;
 
 	m = D->_n_att.vi(n);
-	for (h = 0; h < N_HARM; h++) {
+	for (h = 0; h < NUMBER_OF_HARMONICS; h++) {
 		t = D->_h_att.vi(h, n);
 		if (t > m)
 			m = t;
 	}
-	_l0 = (int) (fsamp * m + 0.5);
-	_l0 = (_l0 + PERIOD - 1) & ~(PERIOD - 1);
+	attack_length = (int) (fsamp * m + 0.5);
+	attack_length = (attack_length + PERIOD - 1) & ~(PERIOD - 1);
 
 	f1 = (fpipe + D->_n_off.vi(n) + D->_n_ran.vi(n) * (2 * _rgen.urand() - 1))
 			/ fsamp;
 	f0 = f1 * exp2ap(D->_n_atd.vi(n) / 1200.0f);
 
-	for (h = N_HARM - 1; h >= 0; h--) {
+	for (h = NUMBER_OF_HARMONICS - 1; h >= 0; h--) {
 		f = (h + 1) * f1;
 		if ((f < 0.45f) && (D->_h_lev.vi(h, n) >= -40.0f))
 			break;
 	}
 	if (f > 0.250f)
-		_k_s = 3;
+		sample_step = 3;
 	else if (f > 0.125f)
-		_k_s = 2;
+		sample_step = 2;
 	else
-		_k_s = 1;
+		sample_step = 1;
 
-	looplen(f1 * fsamp, _k_s * fsamp, (int) (fsamp / 6.0f), &_l1, &nc);
-	if (_l1 < _k_s * PERIOD) {
-		k = (_k_s * PERIOD - 1) / _l1 + 1;
-		_l1 *= k;
+	looplen(f1 * fsamp, sample_step * fsamp, (int) (fsamp / 6.0f), &loop_length, &nc);
+	if (loop_length < sample_step * PERIOD) {
+		k = (sample_step * PERIOD - 1) / loop_length + 1;
+		loop_length *= k;
 		nc *= k;
 	}
 
-	k = _l0 + _l1 + _k_s * (PERIOD + 4);
+	k = attack_length + loop_length + sample_step * (PERIOD + 4);
 
-	delete[] _p0;
-	_p0 = new float[k];
-	_p1 = _p0 + _l0;
-	_p2 = _p1 + _l1;
-	memset(_p0, 0, k * sizeof(float));
+	delete[] attack_start;
+	attack_start = new float[k];
+	loop_start = attack_start + attack_length;
+	loop_end = loop_start + loop_length;
+	memset(attack_start, 0, k * sizeof(float));
 
-	_k_r = (int) (ceilf(D->_n_dct.vi(n) * fsamp / PERIOD) + 1);
-	_m_r = 1.0f - powf(0.1, 1.0 / _k_r);
-	_d_r = _k_s * (exp2ap(D->_n_dcd.vi(n) / 1200.0f) - 1.0f);
-	_d_p = D->_n_ins.vi(n);
+	release_length = (int) (ceil(D->_n_dct.vi(n) * fsamp / PERIOD) + 1);
+	release_multiplier = 1.0f - pow(0.1, 1.0 / release_length);
+	release_detune = sample_step * (exp2ap(D->_n_dcd.vi(n) / 1200.0f) - 1.0f);
+	instability = D->_n_ins.vi(n);
 
 	t = 0.0f;
 	k = (int) (fsamp * D->_n_att.vi(n) + 0.5);
-	for (i = 0; i <= _l0; i++) {
-		_arg[i] = t - floorf(t + 0.5);
+	for (i = 0; i <= attack_length; i++) {
+		_arg[i] = t - floor(t + 0.5);
 		t += (i < k) ? (((k - i) * f0 + i * f1) / k) : f1;
 	}
 
-	for (i = 1; i < _l1; i++) {
-		t = _arg[_l0] + (float) i * nc / _l1;
-		_arg[i + _l0] = t - floorf(t + 0.5);
+	for (i = 1; i < loop_length; i++) {
+		t = _arg[attack_length] + (float) i * nc / loop_length;
+		_arg[i + attack_length] = t - floor(t + 0.5);
 	}
 
 	v0 = exp2ap(0.1661 * D->_n_vol.vi(n));
-	for (h = 0; h < N_HARM; h++) {
+	for (h = 0; h < NUMBER_OF_HARMONICS; h++) {
 		if ((h + 1) * f1 > 0.45)
 			break;
 		v = D->_h_lev.vi(h, n);
@@ -233,17 +233,17 @@ void Pipewave::genwave(Addsynth *D, int n, float fsamp, float fpipe) {
 		k = (int) (fsamp * D->_h_att.vi(h, n) + 0.5);
 		attgain(k, D->_h_atp.vi(h, n));
 
-		for (i = 0; i < _l0 + _l1; i++) {
+		for (i = 0; i < attack_length + loop_length; i++) {
 			t = _arg[i] * (h + 1);
-			t -= floorf(t);
-			m = v * sinf(2 * M_PI * t);
+			t -= floor(t);
+			m = v * sin(2 * M_PI * t);
 			if (i < k)
 				m *= _att[i];
-			_p0[i] += m;
+			attack_start[i] += m;
 		}
 	}
-	for (i = 0; i < _k_s * (PERIOD + 4); i++)
-		_p0[i + _l0 + _l1] = _p0[i + _l0];
+	for (i = 0; i < sample_step * (PERIOD + 4); i++)
+		attack_start[i + attack_length + loop_length] = attack_start[i + attack_length];
 }
 
 void Pipewave::looplen(float f, float fsamp, int lmax, int *aa, int *bb) {
@@ -314,18 +314,18 @@ void Pipewave::save(FILE *F) {
 		float flt[8];
 	} d;
 
-	d.i32[0] = _l0;
-	d.i32[1] = _l1;
-	d.i16[4] = _k_s;
-	d.i16[5] = _k_r;
-	d.flt[3] = _m_r;
+	d.i32[0] = attack_length;
+	d.i32[1] = loop_length;
+	d.i16[4] = sample_step;
+	d.i16[5] = release_length;
+	d.flt[3] = release_multiplier;
 	d.i32[4] = 0;
 	d.i32[5] = 0;
 	d.i32[6] = 0;
 	d.i32[7] = 0;
 	fwrite(&d, 1, 32, F);
-	k = _l0 + _l1 + _k_s * (PERIOD + 4);
-	fwrite(_p0, k, sizeof(float), F);
+	k = attack_length + loop_length + sample_step * (PERIOD + 4);
+	fwrite(attack_start, k, sizeof(float), F);
 }
 
 void Pipewave::load(FILE *F) {
@@ -337,17 +337,17 @@ void Pipewave::load(FILE *F) {
 	} d;
 
 	fread(&d, 1, 32, F);
-	_l0 = d.i32[0];
-	_l1 = d.i32[1];
-	_k_s = d.i16[4];
-	_k_r = d.i16[5];
-	_m_r = d.flt[3];
-	k = _l0 + _l1 + _k_s * (PERIOD + 4);
-	delete[] _p0;
-	_p0 = new float[k];
-	_p1 = _p0 + _l0;
-	_p2 = _p1 + _l1;
-	fread(_p0, k, sizeof(float), F);
+	attack_length = d.i32[0];
+	loop_length = d.i32[1];
+	sample_step = d.i16[4];
+	release_length = d.i16[5];
+	release_multiplier = d.flt[3];
+	k = attack_length + loop_length + sample_step * (PERIOD + 4);
+	delete[] attack_start;
+	attack_start = new float[k];
+	loop_start = attack_start + attack_length;
+	loop_end = loop_start + loop_length;
+	fread(attack_start, k, sizeof(float), F);
 }
 
 Rankwave::Rankwave(int n0, int n1) :
@@ -359,13 +359,12 @@ Rankwave::~Rankwave(void) {
 	delete[] _pipes;
 }
 
-void Rankwave::gen_waves(Addsynth *D, float fsamp, float fbase, float *scale) {
+void Rankwave::generateWaves(AdditiveSynth *additiveSynth, float fsamp, float fbase, float *scale) {
 	Pipewave::initstatic(fsamp);
 
-	fbase *= D->_fn / (D->_fd * scale[9]);
+	fbase *= additiveSynth->_fn / (additiveSynth->_fd * scale[9]);
 	for (int i = _n0; i <= _n1; i++) {
-		_pipes[i - _n0].genwave(D, i - _n0, fsamp,
-				ldexpf(fbase * scale[i % 12], i / 12 - 5));
+		_pipes[i - _n0].generateWaves(additiveSynth, i - _n0, fsamp, ldexp(fbase * scale[i % 12], i / 12 - 5));
 	}
 	_modif = true;
 }
@@ -399,7 +398,7 @@ void Rankwave::play(int shift) {
 		Q->play();
 		if (shift)
 			Q->_sdel = (Q->_sdel >> 1) | Q->_sbit;
-		if (Q->_sdel || Q->_p_p || Q->_p_r)
+		if (Q->_sdel || Q->play_pointer || Q->release_pointer)
 			P = Q;
 		else {
 			if (P)
@@ -410,7 +409,7 @@ void Rankwave::play(int shift) {
 	}
 }
 
-int Rankwave::save(const char *path, Addsynth *D, float fsamp, float fbase,
+int Rankwave::save(const char *path, AdditiveSynth *D, float fsamp, float fbase,
 		float *scale) {
 	FILE *F;
 	Pipewave *P;
@@ -459,7 +458,7 @@ int Rankwave::save(const char *path, Addsynth *D, float fsamp, float fbase,
 	return 0;
 }
 
-int Rankwave::load(const char *path, Addsynth *D, float fsamp, float fbase,
+int Rankwave::load(const char *path, AdditiveSynth *D, float fsamp, float fbase,
 		float *scale) {
 	FILE *F;
 	Pipewave *P;

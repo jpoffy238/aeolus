@@ -22,15 +22,15 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#define N_NOTE 11
-#define N_HARM 64
+#define NUMBER_OF_NOTES 11
+#define NUMBER_OF_HARMONICS 64
 #define NOTE_MIN 36
 #define NOTE_MAX 96
 
-class N_func {
+class NoteFunction {
 public:
 
-	N_func(void);
+	NoteFunction(void);
 	void reset(float v);
 	void setv(int i, float v);
 	void clrv(int i);
@@ -55,13 +55,13 @@ public:
 private:
 
 	int _b;
-	float _v[N_NOTE];
+	float _v[NUMBER_OF_NOTES];
 };
 
-class HN_func {
+class HarmonicFunction {
 public:
 
-	HN_func(void);
+	HarmonicFunction(void);
 	void reset(float v);
 	void setv(int i, float v);
 	void clrv(int i);
@@ -85,13 +85,13 @@ public:
 
 private:
 
-	N_func _h[N_HARM];
+	NoteFunction _h[NUMBER_OF_HARMONICS];
 };
 
-class Addsynth {
+class AdditiveSynth {
 public:
 
-	Addsynth(void);
+	AdditiveSynth(void);
 
 	void reset(void);
 	int save(const char *sdir);
@@ -107,18 +107,18 @@ public:
 	int32_t _n1;
 	int32_t _fn;
 	int32_t _fd;
-	N_func _n_vol;
-	N_func _n_off;
-	N_func _n_ran;
-	N_func _n_ins;
-	N_func _n_att;
-	N_func _n_atd;
-	N_func _n_dct;
-	N_func _n_dcd;
-	HN_func _h_lev;
-	HN_func _h_ran;
-	HN_func _h_att;
-	HN_func _h_atp;
+	NoteFunction _n_vol;
+	NoteFunction _n_off;
+	NoteFunction _n_ran;
+	NoteFunction _n_ins;
+	NoteFunction _n_att;
+	NoteFunction _n_atd;
+	NoteFunction _n_dct;
+	NoteFunction _n_dcd;
+	HarmonicFunction _h_lev;
+	HarmonicFunction _h_ran;
+	HarmonicFunction _h_att;
+	HarmonicFunction _h_atp;
 
 	char _pan;
 	int32_t _del;

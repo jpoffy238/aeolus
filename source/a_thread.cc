@@ -29,7 +29,7 @@ A_thread::A_thread(const char *name) :
 		_inst(0) {
 	const char *p;
 
-	strncpy(_name, name, 32);
+	strncpy((char*)_name, name, (size_t)32);
 	_name[31] = 0;
 	for (p = name; *p && !isdigit(*p); p++)
 		;

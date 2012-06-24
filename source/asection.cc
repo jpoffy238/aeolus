@@ -151,8 +151,8 @@ void Asection::process(float vol, float *W, float *X, float *Y, float *R) {
 	}
 
 	g = 6.283184f * _apar[AZIMUTH]._val;
-	gx1 = cosf(g);
-	gy1 = sinf(g);
+	gx1 = cos(g);
+	gy1 = sin(g);
 	for (i = 0; i < PERIOD; i++) {
 		X[i] += gx1 * x[i] + gy1 * y[i];
 		Y[i] += gx1 * y[i] - gy1 * x[i];

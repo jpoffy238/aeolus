@@ -138,7 +138,7 @@ public:
 	float _fsamp;
 	float _fbase;
 	float *_scale;
-	Addsynth *_sdef;
+	AdditiveSynth *_sdef;
 	Rankwave *_wave;
 	const char *_path;
 };
@@ -278,13 +278,13 @@ public:
 class M_ifc_edit: public ITC_mesg {
 public:
 
-	M_ifc_edit(int type, int group, int ifelm, Addsynth *synth) :
+	M_ifc_edit(int type, int group, int ifelm, AdditiveSynth *synth) :
 			ITC_mesg(type), _group(group), _ifelm(ifelm), _synth(synth) {
 	}
 
 	int _group;
 	int _ifelm;
-	Addsynth *_synth;
+	AdditiveSynth *_synth;
 };
 
 class M_ifc_txtip: public ITC_mesg {

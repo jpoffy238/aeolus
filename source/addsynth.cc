@@ -20,21 +20,21 @@
 #include "global.h"
 #include "addsynth.h"
 
-#define M (N_NOTE - 1)
+#define M (NUMBER_OF_NOTES - 1)
 
 #define swap4(a, b) { (a)[0] = (b)[3], (a)[1] = (b)[2], (a)[2] = (b)[1], (a)[3] = (b)[0]; }
 
-N_func::N_func(void) {
+NoteFunction::NoteFunction(void) {
 	reset(0.0f);
 }
 
-void N_func::reset(float v) {
+void NoteFunction::reset(float v) {
 	_b = 16;
-	for (int i = 0; i < N_NOTE; i++)
+	for (int i = 0; i < NUMBER_OF_NOTES; i++)
 		_v[i] = v;
 }
 
-void N_func::setv(int i, float v) {
+void NoteFunction::setv(int i, float v) {
 	int j;
 	float d;
 
@@ -66,7 +66,7 @@ void N_func::setv(int i, float v) {
 	}
 }
 
-void N_func::clrv(int i) {
+void NoteFunction::clrv(int i) {
 	int j, k, m;
 	float d;
 
@@ -97,22 +97,22 @@ void N_func::clrv(int i) {
 	}
 }
 
-void N_func::write(FILE *F) {
+void NoteFunction::write(FILE *F) {
 #ifdef __BYTE_ORDER
 #if (__BYTE_ORDER == __LITTLE_ENDIAN)
 
 	fwrite (&_b, 1, sizeof (int32_t), F);
-	fwrite (_v, N_NOTE, sizeof (float), F);
+	fwrite (_v, NUMBER_OF_NOTES, sizeof (float), F);
 
 #elif (__BYTE_ORDER == __BIG_ENDIAN)
 
 	int i;
-	char d [N_NOTE * sizeof (float)];
+	char d [NUMBER_OF_NOTES * sizeof (float)];
 
 	swap4 (d, (char *)(&_b));
 	fwrite (d, 1, sizeof (int32_t), F);
-	for (i = 0; i < N_NOTE; i++) swap4 (d + i * sizeof (float), (char *)(_v + i));
-	fwrite (d, N_NOTE, sizeof (float), F);
+	for (i = 0; i < NUMBER_OF_NOTES; i++) swap4 (d + i * sizeof (float), (char *)(_v + i));
+	fwrite (d, NUMBER_OF_NOTES, sizeof (float), F);
 
 #else
 #error Byte order is not supported !
@@ -122,22 +122,22 @@ void N_func::write(FILE *F) {
 #endif
 }
 
-void N_func::read(FILE *F) {
+void NoteFunction::read(FILE *F) {
 #ifdef __BYTE_ORDER
 #if (__BYTE_ORDER == __LITTLE_ENDIAN)
 
 	fread (&_b, 1, sizeof (int32_t), F);
-	fread (&_v, N_NOTE, sizeof (float), F);
+	fread (&_v, NUMBER_OF_NOTES, sizeof (float), F);
 
 #elif (__BYTE_ORDER == __BIG_ENDIAN)
 
 	int i;
-	char d [sizeof (int) + N_NOTE * sizeof (float)];
+	char d [sizeof (int) + NUMBER_OF_NOTES * sizeof (float)];
 
 	fread (d, 1, sizeof (int32_t), F);
 	swap4 ((char *)(&_b), d);
-	fread (d, N_NOTE, sizeof (float), F);
-	for (i = 0; i < N_NOTE; i++) swap4 ((char *)(_v + i), d + i * sizeof (float));
+	fread (d, NUMBER_OF_NOTES, sizeof (float), F);
+	for (i = 0; i < NUMBER_OF_NOTES; i++) swap4 ((char *)(_v + i), d + i * sizeof (float));
 
 #else
 #error Byte order is not supported !
@@ -147,39 +147,39 @@ void N_func::read(FILE *F) {
 #endif
 }
 
-HN_func::HN_func(void) {
+HarmonicFunction::HarmonicFunction(void) {
 }
 
-void HN_func::reset(float v) {
-	for (int j = 0; j < N_HARM; j++)
+void HarmonicFunction::reset(float v) {
+	for (int j = 0; j < NUMBER_OF_HARMONICS; j++)
 		(_h + j)->reset(v);
 }
 
-void HN_func::setv(int i, float v) {
-	for (int j = 0; j < N_HARM; j++)
+void HarmonicFunction::setv(int i, float v) {
+	for (int j = 0; j < NUMBER_OF_HARMONICS; j++)
 		(_h + j)->setv(i, v);
 }
 
-void HN_func::clrv(int i) {
-	for (int j = 0; j < N_HARM; j++)
+void HarmonicFunction::clrv(int i) {
+	for (int j = 0; j < NUMBER_OF_HARMONICS; j++)
 		(_h + j)->clrv(i);
 }
 
-void HN_func::write(FILE *F, int k) {
+void HarmonicFunction::write(FILE *F, int k) {
 	for (int j = 0; j < k; j++)
 		(_h + j)->write(F);
 }
 
-void HN_func::read(FILE *F, int k) {
+void HarmonicFunction::read(FILE *F, int k) {
 	for (int j = 0; j < k; j++)
 		(_h + j)->read(F);
 }
 
-Addsynth::Addsynth(void) {
+AdditiveSynth::AdditiveSynth(void) {
 	reset();
 }
 
-void Addsynth::reset(void) {
+void AdditiveSynth::reset(void) {
 	*_stopname = 0;
 	*_mnemonic = 0;
 	*_copyrite = 0;
@@ -202,7 +202,7 @@ void Addsynth::reset(void) {
 	_h_atp.reset(0.0f);
 }
 
-int Addsynth::save(const char *sdir) {
+int AdditiveSynth::save(const char *sdir) {
 	FILE *F;
 	char d[32];
 	char path[1024];
@@ -219,7 +219,7 @@ int Addsynth::save(const char *sdir) {
 	memset(d, 0, 32);
 	strcpy(d, "AEOLUS");
 	d[7] = 2;
-	d[26] = N_HARM;
+	d[26] = NUMBER_OF_HARMONICS;
 	d[28] = _n0;
 	d[29] = _n1;
 	d[30] = _fn;
@@ -240,16 +240,16 @@ int Addsynth::save(const char *sdir) {
 	_n_atd.write(F);
 	_n_dct.write(F);
 	_n_dcd.write(F);
-	_h_lev.write(F, N_HARM);
-	_h_ran.write(F, N_HARM);
-	_h_att.write(F, N_HARM);
-	_h_atp.write(F, N_HARM);
+	_h_lev.write(F, NUMBER_OF_HARMONICS);
+	_h_ran.write(F, NUMBER_OF_HARMONICS);
+	_h_att.write(F, NUMBER_OF_HARMONICS);
+	_h_atp.write(F, NUMBER_OF_HARMONICS);
 
 	fclose(F);
 	return 0;
 }
 
-int Addsynth::load(const char *sdir) {
+int AdditiveSynth::load(const char *sdir) {
 	FILE *F;
 	char d[32];
 	char path[1024];

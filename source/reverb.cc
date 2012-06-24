@@ -137,7 +137,7 @@ void Reverb::set_t60hi(float thi, float fhi) {
 	_thi = thi;
 	_fhi = fhi;
 	t = thi * _rate;
-	c = 1 - cosf(2 * M_PI * fhi / _rate);
+	c = 1 - cos(2 * M_PI * fhi / _rate);
 	for (int i = 0; i < 16; i++)
 		_delm[i].set_t60hi(t, c);
 }

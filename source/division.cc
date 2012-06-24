@@ -43,10 +43,10 @@ void Division::process(void) {
 	if (_trem) {
 		_s += _w * _c;
 		_c -= _w * _s;
-		t = sqrtf(_c * _c + _s * _s);
+		t = sqrt(_c * _c + _s * _s);
 		_c /= t;
 		_s /= t;
-		if ((_trem == 2) && (fabsf(_s) < 0.05f)) {
+		if ((_trem == 2) && (fabs(_s) < 0.05f)) {
 			_trem = 0;
 			_c = 1;
 			_s = 0;

@@ -582,31 +582,31 @@ void Editwin::handle_callb(int k, X_window *W, XEvent *E) {
 	}
 }
 
-void Editwin::set_func(N_func *D, Functionwin *F, int k) {
+void Editwin::set_func(NoteFunction *D, Functionwin *F, int k) {
 	F->reset(k);
-	for (int i = 0; i < N_NOTE; i++)
+	for (int i = 0; i < NUMBER_OF_NOTES; i++)
 		if (D->st(i))
 			F->set_point(k, i, D->vs(i));
 	F->redraw();
 }
 
-void Editwin::set_harm(HN_func *D, Multislider *M, Functionwin *F, int k,
+void Editwin::set_harm(HarmonicFunction *D, Multislider *M, Functionwin *F, int k,
 		int h) {
 	F->reset(k);
-	for (int i = 0; i < N_NOTE; i++)
+	for (int i = 0; i < NUMBER_OF_NOTES; i++)
 		if (D->st(h, i))
 			F->set_point(k, i, D->vs(h, i));
 	F->redraw();
 	M->set_mark(h);
 }
 
-void Editwin::set_note(HN_func *D, Multislider *M, Functionwin *F, int n) {
-	for (int i = 0; i < N_HARM; i++)
+void Editwin::set_note(HarmonicFunction *D, Multislider *M, Functionwin *F, int n) {
+	for (int i = 0; i < NUMBER_OF_HARMONICS; i++)
 		M->set_val(i, D->st(i, n), D->vs(i, n));
 	F->set_mark(n);
 }
 
-void Editwin::msl_update(HN_func *D, Multislider *M, Functionwin *F, int k,
+void Editwin::msl_update(HarmonicFunction *D, Multislider *M, Functionwin *F, int k,
 		int d, int h, int n) {
 	int i = M->get_ind();
 	float v = M->get_val();
@@ -624,7 +624,7 @@ void Editwin::msl_update(HN_func *D, Multislider *M, Functionwin *F, int k,
 	}
 }
 
-void Editwin::fun_update(HN_func *D, Multislider *M, Functionwin *F, int d,
+void Editwin::fun_update(HarmonicFunction *D, Multislider *M, Functionwin *F, int d,
 		int h, int n) {
 	int i = F->get_ind();
 	float v = F->get_val();
@@ -637,7 +637,7 @@ void Editwin::fun_update(HN_func *D, Multislider *M, Functionwin *F, int d,
 		M->set_val(h, d, D->vs(h, n));
 }
 
-void Editwin::fun_update(N_func *D, Functionwin *F, int d) {
+void Editwin::fun_update(NoteFunction *D, Functionwin *F, int d) {
 	int i = F->get_ind();
 	float v = F->get_val();
 
@@ -647,7 +647,7 @@ void Editwin::fun_update(N_func *D, Functionwin *F, int d) {
 		D->clrv(i);
 }
 
-void Editwin::init(Addsynth *sdef) {
+void Editwin::init(AdditiveSynth *sdef) {
 	int i;
 	char s[256];
 
