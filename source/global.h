@@ -1,26 +1,24 @@
 /*
-    Copyright (C) 2003-2008 Fons Adriaensen <fons@kokkinizita.net>
-    Copyright (C) 2008 Hans Fugal <hans@fugal.net> (OSX version)
-    
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+ Copyright (C) 2003-2008 Fons Adriaensen <fons@kokkinizita.net>
+ Copyright (C) 2008 Hans Fugal <hans@fugal.net> (OSX version)
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-*/
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ */
 
 #ifndef __GLOBAL_H
 #define __GLOBAL_H
-
 
 #ifdef __APPLE__
 #include <machine/endian.h>
@@ -52,18 +50,16 @@
 
 #include "lfqueue.h"
 
-
 enum // GLOBAL LIMITS 
 {
-    NASECT = 4,
-    NDIVIS = 8,
-    NKEYBD = 6,
-    NGROUP = 8,
-    NNOTES = 61,
-    NBANK  = 32,
-    NPRES  = 32
+	NASECT = 4,
+	NDIVIS = 8,
+	NKEYBD = 6,
+	NGROUP = 8,
+	NNOTES = 61,
+	NBANK = 32,
+	NPRES = 32
 };
-
 
 #define MIDICTL_SWELL 7
 #define SWELL_MIN 0.0f
@@ -90,16 +86,13 @@ enum // GLOBAL LIMITS
 #define HOLD_MASK 64
 #define ALL_MASK 127
 
-
-class Fparm
-{
+class Fparm {
 public:
 
-    float  _val;
-    float  _min;
-    float  _max;
+	float _val;
+	float _min;
+	float _max;
 };
-
 
 #endif
 

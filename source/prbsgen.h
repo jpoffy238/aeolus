@@ -1,29 +1,26 @@
 /*
-  Copyright (C) 2003-2008 Fons Adriaensen <fons@kokkinizita.net>
-    
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation; either version 2 of the License, or
-  (at your option) any later version.
+ Copyright (C) 2003-2008 Fons Adriaensen <fons@kokkinizita.net>
 
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
 
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-*/
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ */
 
 #ifndef __PRBSGEN_H
 #define	__PRBSGEN_H
 
-
 #include <assert.h>
 #include <stdint.h>
-
 
 //---------------------------------------------------------------------------
 //
@@ -95,168 +92,156 @@
 //
 //---------------------------------------------------------------------------==
 
-
-class Prbsgen
-{
+class Prbsgen {
 public:
 
-    enum
-	{
-	    // Some polynomials for maximum length seqeunces.
- 
-	    G7  = 0x00000041,
-	    G8  = 0x0000008E,
-	    G15 = 0x00004001,
-	    G16 = 0x00008016,
-	    G23 = 0x00400010,
-	    G24 = 0x0080000D,
-	    G31 = 0x40000004,
-	    G32 = 0x80000057,
+	enum {
+		// Some polynomials for maximum length seqeunces.
+
+		G7 = 0x00000041,
+		G8 = 0x0000008E,
+		G15 = 0x00004001,
+		G16 = 0x00008016,
+		G23 = 0x00400010,
+		G24 = 0x0080000D,
+		G31 = 0x40000004,
+		G32 = 0x80000057,
 	};
 
-    Prbsgen (void);
+	Prbsgen(void);
 
-    void set_poly (uint32_t poly);
-    void set_stat (uint32_t stat);
-    void sync_forw (uint32_t bits);
-    void sync_back (uint32_t bits);
-    int  step (void);
-    void crc_in (int b);
-    int  crc_out (void);
+	void set_poly(uint32_t poly);
+	void set_stat(uint32_t stat);
+	void sync_forw(uint32_t bits);
+	void sync_back(uint32_t bits);
+	int step(void);
+	void crc_in(int b);
+	int crc_out(void);
 
-    uint32_t stat (void) const;
-    uint32_t poly (void) const;
-    uint32_t mask (void) const;
-    uint32_t hbit (void) const;
-    int degr (void) const;
+	uint32_t stat(void) const;
+	uint32_t poly(void) const;
+	uint32_t mask(void) const;
+	uint32_t hbit(void) const;
+	int degr(void) const;
 
-    ~Prbsgen (void);
+	~Prbsgen(void);
 
 private:
-  
-    uint32_t _stat;
-    uint32_t _poly;
-    uint32_t _mask;
-    uint32_t _hbit;
-    int _degr;
+
+	uint32_t _stat;
+	uint32_t _poly;
+	uint32_t _mask;
+	uint32_t _hbit;
+	int _degr;
 
 };
 
-
-inline Prbsgen::Prbsgen (void)
-    : _stat (0), _poly (0), _mask (0), _degr (0)
-{
+inline Prbsgen::Prbsgen(void) :
+		_stat(0), _poly(0), _mask(0), _degr(0) {
 }
 
-
-inline Prbsgen::~Prbsgen (void)
-{
+inline Prbsgen::~Prbsgen(void) {
 }
 
+inline void Prbsgen::set_poly(uint32_t poly) {
+	assert(poly != 0);
 
-inline void Prbsgen::set_poly (uint32_t poly)
-{
-    assert (poly != 0);
+	_poly = poly;
+	_mask = 0;
+	_degr = 0;
 
-    _poly = poly;
-    _mask = 0;
-    _degr = 0;
-  
-    while (_mask < _poly)
-    {
-	_mask = (_mask << 1) | 1;
-	_degr += 1;
-    }    
-    _stat = _mask;
-    _hbit = (_mask >> 1) + 1;
+	while (_mask < _poly) {
+		_mask = (_mask << 1) | 1;
+		_degr += 1;
+	}
+	_stat = _mask;
+	_hbit = (_mask >> 1) + 1;
 }
 
+inline void Prbsgen::set_stat(uint32_t stat) {
+	assert(_poly != 0);
 
-inline void Prbsgen::set_stat (uint32_t stat)
-{
-    assert (_poly != 0);
+	_stat = stat & _mask;
 
-    _stat = stat & _mask;
-
-    assert (_stat != 0);
+	assert(_stat != 0);
 }
 
+inline int Prbsgen::step(void) {
+	int bit;
 
-inline int Prbsgen::step (void)
-{
-    int bit;
+	assert(_poly != 0);
 
-    assert (_poly != 0);
-
-    bit = _stat & 1;
-    _stat >>= 1;
-    if (bit) _stat ^= _poly;
-
-    return bit;
-}
-
-
-inline void Prbsgen::sync_forw (uint32_t bits)
-{
-    assert (_poly != 0);
-
-    for (int i = 0; i < _degr; i++)
-    {
+	bit = _stat & 1;
 	_stat >>= 1;
-	if (bits & 1) _stat ^= _poly;
-	bits >>= 1;
-    }
+	if (bit)
+		_stat ^= _poly;
+
+	return bit;
 }
 
+inline void Prbsgen::sync_forw(uint32_t bits) {
+	assert(_poly != 0);
 
-inline void Prbsgen::sync_back (uint32_t bits)
-{
-    assert (_poly != 0);
-
-    _stat = 0;
-    for (int h = _hbit; h; h >>= 1)
-    {
-	if (bits & h) _stat ^= _poly;
-	_stat <<= 1;
-    }
-    _stat ^= bits;
-    _stat &= _mask;
+	for (int i = 0; i < _degr; i++) {
+		_stat >>= 1;
+		if (bits & 1)
+			_stat ^= _poly;
+		bits >>= 1;
+	}
 }
 
+inline void Prbsgen::sync_back(uint32_t bits) {
+	assert(_poly != 0);
 
-inline void Prbsgen::crc_in (int b)
-{
-    int bit;
-
-    assert (_poly != 0);
-
-    bit = (_stat & 1) ^ b;
-    _stat >>= 1;
-    if (bit) _stat ^= _poly;
+	_stat = 0;
+	for (int h = _hbit; h; h >>= 1) {
+		if (bits & h)
+			_stat ^= _poly;
+		_stat <<= 1;
+	}
+	_stat ^= bits;
+	_stat &= _mask;
 }
 
+inline void Prbsgen::crc_in(int b) {
+	int bit;
 
-inline int Prbsgen::crc_out (void)
-{
-    int bit;
+	assert(_poly != 0);
 
-    assert (_poly != 0);
-
-    bit = (_stat & 1);
-    _stat >>= 1;
-    return bit;
+	bit = (_stat & 1) ^ b;
+	_stat >>= 1;
+	if (bit)
+		_stat ^= _poly;
 }
 
+inline int Prbsgen::crc_out(void) {
+	int bit;
 
-inline uint32_t Prbsgen::stat (void) const { return _stat; }
+	assert(_poly != 0);
 
-inline uint32_t Prbsgen::poly (void) const { return _poly; }
+	bit = (_stat & 1);
+	_stat >>= 1;
+	return bit;
+}
 
-inline uint32_t Prbsgen::mask (void) const { return _mask; }
+inline uint32_t Prbsgen::stat(void) const {
+	return _stat;
+}
 
-inline uint32_t Prbsgen::hbit (void) const { return _hbit; }
+inline uint32_t Prbsgen::poly(void) const {
+	return _poly;
+}
 
-inline int Prbsgen::degr (void) const { return _degr; }
+inline uint32_t Prbsgen::mask(void) const {
+	return _mask;
+}
 
+inline uint32_t Prbsgen::hbit(void) const {
+	return _hbit;
+}
+
+inline int Prbsgen::degr(void) const {
+	return _degr;
+}
 
 #endif
